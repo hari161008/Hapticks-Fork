@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.rounded.AppBlocking
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.SwipeVertical
+import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -66,6 +67,7 @@ fun ScrollHapticsScreen(
     settings: HapticsSettings,
     isServiceEnabled: Boolean,
     onScrollEnabledChange: (Boolean) -> Unit,
+    onScrollHorizontalEnabledChange: (Boolean) -> Unit,
     onScrollHapticDensityCommit: (Float) -> Unit,
     onIntensityCommit: (Float) -> Unit,
     onPatternSelected: (HapticPattern) -> Unit,
@@ -84,9 +86,7 @@ fun ScrollHapticsScreen(
     val listState = rememberLazyListState()
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             LargeTopAppBar(
@@ -107,9 +107,7 @@ fun ScrollHapticsScreen(
     ) { padding ->
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
@@ -133,6 +131,18 @@ fun ScrollHapticsScreen(
                         thickness = 0.5.dp,
                         modifier = Modifier.padding(horizontal = 20.dp),
                     )
+                    HapticToggleRow(
+                        title = stringResource(id = R.string.scroll_horizontal_toggle_title),
+                        subtitle = stringResource(id = R.string.scroll_horizontal_toggle_subtitle),
+                        checked = settings.scrollHorizontalEnabled,
+                        onCheckedChange = onScrollHorizontalEnabledChange,
+                        leadingIcon = Icons.Rounded.Swipe,
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        thickness = 0.5.dp,
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                    )
                     AppExclusionRow(
                         excludedCount = settings.scrollExcludedPackages.size,
                         onClick = onOpenAppExclusions,
@@ -147,71 +157,34 @@ fun ScrollHapticsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = onResetToDefaults) {
-                        Icon(
-                            imageVector = Icons.Rounded.RestartAlt,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
+                        Icon(imageVector = Icons.Rounded.RestartAlt, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.size(4.dp))
-                        Text(
-                            text = stringResource(R.string.reset_to_defaults),
-                            style = MaterialTheme.typography.labelLarge,
-                        )
+                        Text(text = stringResource(R.string.reset_to_defaults), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
 
             item(key = "scroll_vib_count_section") {
                 SectionCard {
-                    ScrollPulseDensityControl(
-                        eventsPerHundredPx = settings.scrollHapticEventsPerHundredPx,
-                        onCommit = onScrollHapticDensityCommit,
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                    )
-                    IntensityControl(
-                        intensity = settings.scrollIntensity,
-                        onIntensityCommit = onIntensityCommit,
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                    )
-                    VibsPerEventControl(
-                        value = settings.scrollVibrationsPerEvent,
-                        onCommit = onVibrationsPerEventCommit,
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                    )
-                    SpeedVibScaleControl(
-                        value = settings.scrollSpeedVibrationScale,
-                        onCommit = onSpeedVibScaleCommit,
-                    )
+                    ScrollPulseDensityControl(eventsPerHundredPx = settings.scrollHapticEventsPerHundredPx, onCommit = onScrollHapticDensityCommit)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 20.dp))
+                    IntensityControl(intensity = settings.scrollIntensity, onIntensityCommit = onIntensityCommit)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 20.dp))
+                    VibsPerEventControl(value = settings.scrollVibrationsPerEvent, onCommit = onVibrationsPerEventCommit)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 20.dp))
+                    SpeedVibScaleControl(value = settings.scrollSpeedVibrationScale, onCommit = onSpeedVibScaleCommit)
                 }
             }
 
             item(key = "scroll_tail_cutoff_section") {
                 SectionCard {
-                    TailCutoffControl(
-                        valueMs = settings.scrollTailCutoffMs,
-                        onCommit = onTailCutoffMsCommit,
-                    )
+                    TailCutoffControl(valueMs = settings.scrollTailCutoffMs, onCommit = onTailCutoffMsCommit)
                 }
             }
 
             item(key = "scroll_pattern_section") {
                 SectionCard {
-                    PatternSelector(
-                        selected = settings.scrollPattern,
-                        onPatternSelected = onPatternSelected,
-                    )
+                    PatternSelector(selected = settings.scrollPattern, onPatternSelected = onPatternSelected)
                 }
             }
 
@@ -223,9 +196,7 @@ fun ScrollHapticsScreen(
                 )
             }
 
-            item(key = "bottom_spacer") {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
+            item(key = "bottom_spacer") { Spacer(modifier = Modifier.height(4.dp)) }
         }
     }
 }
@@ -233,86 +204,47 @@ fun ScrollHapticsScreen(
 @Composable
 private fun AppExclusionRow(excludedCount: Int, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Icon(
-            imageVector = Icons.Rounded.AppBlocking,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp),
-        )
+        Icon(imageVector = Icons.Rounded.AppBlocking, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
         Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(R.string.app_exclusions_row_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(
-                text = stringResource(R.string.app_exclusions_row_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = if (excludedCount == 0) {
-                    stringResource(R.string.app_exclusions_row_subtitle_none)
-                } else {
-                    stringResource(R.string.app_exclusions_row_subtitle_some, excludedCount)
-                },
+                text = if (excludedCount == 0) stringResource(R.string.app_exclusions_row_subtitle_none)
+                else stringResource(R.string.app_exclusions_row_subtitle_some, excludedCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Icon(
-            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(16.dp),
-        )
+        Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
     }
 }
 
 @Composable
 private fun BackPill(onBack: () -> Unit) {
-    IconButton(
-        onClick = onBack,
-    ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-            contentDescription = stringResource(id = R.string.back),
-            tint = MaterialTheme.colorScheme.onSurface,
-        )
+    IconButton(onClick = onBack) {
+        Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(id = R.string.back), tint = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 private fun scrollDensitySliderToEvents(slider01: Float): Float {
     val t = slider01.coerceIn(0f, 1f)
-    return HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX +
-        t * (HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX)
+    return HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX + t * (HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX)
 }
 
 private fun eventsToScrollDensitySlider(eventsPerHundredPx: Float): Float {
-    val e = eventsPerHundredPx.coerceIn(
-        HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX,
-        HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX,
-    )
-    return ((e - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX) /
-        (HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX))
-        .coerceIn(0f, 1f)
+    val e = eventsPerHundredPx.coerceIn(HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX, HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX)
+    return ((e - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX) / (HapticsSettings.MAX_SCROLL_EVENTS_PER_HUNDRED_PX - HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX)).coerceIn(0f, 1f)
 }
 
 @Composable
-private fun ScrollPulseDensityControl(
-    eventsPerHundredPx: Float,
-    onCommit: (Float) -> Unit,
-) {
+private fun ScrollPulseDensityControl(eventsPerHundredPx: Float, onCommit: (Float) -> Unit) {
     val context = LocalContext.current
     val initialSlider = eventsToScrollDensitySlider(eventsPerHundredPx)
-    var draftSlider by remember(eventsPerHundredPx) {
-        mutableFloatStateOf(initialSlider)
-    }
-    var lastTickIndex by remember(eventsPerHundredPx) {
-        mutableIntStateOf(slider01ToTickIndex(initialSlider))
-    }
+    var draftSlider by remember(eventsPerHundredPx) { mutableFloatStateOf(initialSlider) }
+    var lastTickIndex by remember(eventsPerHundredPx) { mutableIntStateOf(slider01ToTickIndex(initialSlider)) }
     val draftEvents = scrollDensitySliderToEvents(draftSlider)
     val eventsLabel = String.format(Locale.US, "%.2f", draftEvents)
 
@@ -320,40 +252,13 @@ private fun ScrollPulseDensityControl(
         thumbColor = MaterialTheme.colorScheme.secondary,
         activeTrackColor = MaterialTheme.colorScheme.secondary,
         inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        activeTickColor = MaterialTheme.colorScheme.secondary,
-        inactiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
     )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            text = stringResource(id = R.string.scroll_events_per_unit_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = stringResource(id = R.string.scroll_events_per_unit_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End,
-        ) {
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = CircleShape,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.scroll_events_per_unit_value, eventsLabel),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                )
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = stringResource(id = R.string.scroll_events_per_unit_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = stringResource(id = R.string.scroll_events_per_unit_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+            Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape) {
+                Text(text = stringResource(id = R.string.scroll_events_per_unit_value, eventsLabel), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
             }
         }
         Slider(
@@ -361,346 +266,145 @@ private fun ScrollPulseDensityControl(
             onValueChange = { newValue ->
                 draftSlider = newValue
                 val tickIndex = slider01ToTickIndex(newValue)
-                if (tickIndex != lastTickIndex) {
-                    lastTickIndex = tickIndex
-                    context.performHapticSliderTick()
-                }
+                if (tickIndex != lastTickIndex) { lastTickIndex = tickIndex; context.performHapticSliderTick() }
             },
             onValueChangeFinished = { onCommit(scrollDensitySliderToEvents(draftSlider)) },
-            valueRange = 0f..1f,
-            steps = SliderTickStepsDefault,
-            colors = sliderColors,
+            valueRange = 0f..1f, steps = SliderTickStepsDefault, colors = sliderColors,
         )
     }
 }
 
 @Composable
-private fun IntensityControl(
-    intensity: Float,
-    onIntensityCommit: (Float) -> Unit,
-) {
+private fun IntensityControl(intensity: Float, onIntensityCommit: (Float) -> Unit) {
     val context = LocalContext.current
     var draft by remember(intensity) { mutableFloatStateOf(intensity) }
-    var lastTickIndex by remember(intensity) {
-        mutableIntStateOf(slider01ToTickIndex(intensity))
-    }
+    var lastTickIndex by remember(intensity) { mutableIntStateOf(slider01ToTickIndex(intensity)) }
     val percent = (draft * 100f).roundToInt()
-
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = MaterialTheme.colorScheme.primary,
-        activeTrackColor = MaterialTheme.colorScheme.primary,
-        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        activeTickColor = MaterialTheme.colorScheme.primary,
-        inactiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = R.string.scroll_intensity_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
+    val sliderColors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary, inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = stringResource(id = R.string.scroll_intensity_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             IntensityBadge(percent = percent)
         }
-        Text(
-            text = stringResource(id = R.string.scroll_intensity_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(text = stringResource(id = R.string.scroll_intensity_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(
             value = draft,
             onValueChange = { newValue ->
                 draft = newValue
                 val tickIndex = slider01ToTickIndex(newValue)
-                if (tickIndex != lastTickIndex) {
-                    lastTickIndex = tickIndex
-                    context.performHapticSliderTick()
-                }
+                if (tickIndex != lastTickIndex) { lastTickIndex = tickIndex; context.performHapticSliderTick() }
             },
             onValueChangeFinished = { onIntensityCommit(draft) },
-            valueRange = 0f..1f,
-            steps = SliderTickStepsDefault,
-            colors = sliderColors,
+            valueRange = 0f..1f, steps = SliderTickStepsDefault, colors = sliderColors,
         )
     }
 }
 
 @Composable
-private fun VibsPerEventControl(
-    value: Float,
-    onCommit: (Float) -> Unit,
-) {
+private fun VibsPerEventControl(value: Float, onCommit: (Float) -> Unit) {
     val context = LocalContext.current
     var draft by remember(value) { mutableFloatStateOf(value) }
-    var lastTickIndex by remember(value) {
-        mutableIntStateOf(slider01ToTickIndex(vibsPerEventToSlider(value)))
-    }
-    val displayCount = draft.roundToInt().coerceIn(
-        HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT.toInt(),
-        HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT.toInt(),
-    )
-
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = MaterialTheme.colorScheme.tertiary,
-        activeTrackColor = MaterialTheme.colorScheme.tertiary,
-        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        activeTickColor = MaterialTheme.colorScheme.tertiary,
-        inactiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = R.string.scroll_vibs_per_event_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            Surface(
-                color = MaterialTheme.colorScheme.tertiaryContainer,
-                shape = CircleShape,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.scroll_vibs_per_event_value, displayCount),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                )
+    var lastTickIndex by remember(value) { mutableIntStateOf(slider01ToTickIndex(vibsPerEventToSlider(value))) }
+    val displayCount = draft.roundToInt().coerceIn(HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT.toInt(), HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT.toInt())
+    val sliderColors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.tertiary, activeTrackColor = MaterialTheme.colorScheme.tertiary, inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = stringResource(id = R.string.scroll_vibs_per_event_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = CircleShape) {
+                Text(text = stringResource(id = R.string.scroll_vibs_per_event_value, displayCount), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
             }
         }
-        Text(
-            text = stringResource(id = R.string.scroll_vibs_per_event_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(text = stringResource(id = R.string.scroll_vibs_per_event_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(
             value = vibsPerEventToSlider(draft),
             onValueChange = { sliderVal ->
                 val newValue = sliderToVibsPerEvent(sliderVal)
                 draft = newValue
                 val tickIndex = slider01ToTickIndex(sliderVal)
-                if (tickIndex != lastTickIndex) {
-                    lastTickIndex = tickIndex
-                    context.performHapticSliderTick()
-                }
+                if (tickIndex != lastTickIndex) { lastTickIndex = tickIndex; context.performHapticSliderTick() }
             },
             onValueChangeFinished = { onCommit(draft) },
-            valueRange = 0f..1f,
-            steps = SliderTickStepsDefault,
-            colors = sliderColors,
+            valueRange = 0f..1f, steps = SliderTickStepsDefault, colors = sliderColors,
         )
     }
 }
 
 @Composable
-private fun SpeedVibScaleControl(
-    value: Float,
-    onCommit: (Float) -> Unit,
-) {
+private fun SpeedVibScaleControl(value: Float, onCommit: (Float) -> Unit) {
     val context = LocalContext.current
     var draft by remember(value) { mutableFloatStateOf(value) }
-    var lastTickIndex by remember(value) {
-        mutableIntStateOf(slider01ToTickIndex(value))
-    }
+    var lastTickIndex by remember(value) { mutableIntStateOf(slider01ToTickIndex(value)) }
     val percent = (draft * 100f).roundToInt()
-
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = MaterialTheme.colorScheme.secondary,
-        activeTrackColor = MaterialTheme.colorScheme.secondary,
-        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        activeTickColor = MaterialTheme.colorScheme.secondary,
-        inactiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = R.string.scroll_speed_vib_scale_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = CircleShape,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.scroll_speed_vib_scale_value, percent),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                )
+    val sliderColors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.secondary, activeTrackColor = MaterialTheme.colorScheme.secondary, inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = stringResource(id = R.string.scroll_speed_vib_scale_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape) {
+                Text(text = stringResource(id = R.string.scroll_speed_vib_scale_value, percent), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
             }
         }
-        Text(
-            text = stringResource(id = R.string.scroll_speed_vib_scale_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(text = stringResource(id = R.string.scroll_speed_vib_scale_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(
             value = draft,
             onValueChange = { newValue ->
                 draft = newValue
                 val tickIndex = slider01ToTickIndex(newValue)
-                if (tickIndex != lastTickIndex) {
-                    lastTickIndex = tickIndex
-                    context.performHapticSliderTick()
-                }
+                if (tickIndex != lastTickIndex) { lastTickIndex = tickIndex; context.performHapticSliderTick() }
             },
             onValueChangeFinished = { onCommit(draft) },
-            valueRange = 0f..1f,
-            steps = SliderTickStepsDefault,
-            colors = sliderColors,
+            valueRange = 0f..1f, steps = SliderTickStepsDefault, colors = sliderColors,
         )
     }
 }
 
 @Composable
-private fun TailCutoffControl(
-    valueMs: Int,
-    onCommit: (Int) -> Unit,
-) {
+private fun TailCutoffControl(valueMs: Int, onCommit: (Int) -> Unit) {
     val context = LocalContext.current
-    var draftSlider by remember(valueMs) {
-        mutableFloatStateOf(tailCutoffMsToSlider(valueMs))
-    }
-    var lastTickIndex by remember(valueMs) {
-        mutableIntStateOf(slider01ToTickIndex(tailCutoffMsToSlider(valueMs)))
-    }
+    var draftSlider by remember(valueMs) { mutableFloatStateOf(tailCutoffMsToSlider(valueMs)) }
+    var lastTickIndex by remember(valueMs) { mutableIntStateOf(slider01ToTickIndex(tailCutoffMsToSlider(valueMs))) }
     val draftMs = sliderToTailCutoffMs(draftSlider)
-
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = MaterialTheme.colorScheme.error,
-        activeTrackColor = MaterialTheme.colorScheme.error,
-        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        activeTickColor = MaterialTheme.colorScheme.error,
-        inactiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = R.string.scroll_tail_cutoff_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            Surface(
-                color = MaterialTheme.colorScheme.errorContainer,
-                shape = CircleShape,
-            ) {
-                val labelText = if (draftMs <= 0) {
-                    stringResource(id = R.string.scroll_tail_cutoff_value_off)
-                } else {
-                    stringResource(id = R.string.scroll_tail_cutoff_value_ms, draftMs)
-                }
-                Text(
-                    text = labelText,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                )
+    val sliderColors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.error, activeTrackColor = MaterialTheme.colorScheme.error, inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = stringResource(id = R.string.scroll_tail_cutoff_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Surface(color = MaterialTheme.colorScheme.errorContainer, shape = CircleShape) {
+                val labelText = if (draftMs <= 0) stringResource(id = R.string.scroll_tail_cutoff_value_off) else stringResource(id = R.string.scroll_tail_cutoff_value_ms, draftMs)
+                Text(text = labelText, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
             }
         }
-        Text(
-            text = stringResource(id = R.string.scroll_tail_cutoff_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(text = stringResource(id = R.string.scroll_tail_cutoff_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(
             value = draftSlider,
             onValueChange = { newValue ->
                 draftSlider = newValue
                 val tickIndex = slider01ToTickIndex(newValue)
-                if (tickIndex != lastTickIndex) {
-                    lastTickIndex = tickIndex
-                    context.performHapticSliderTick()
-                }
+                if (tickIndex != lastTickIndex) { lastTickIndex = tickIndex; context.performHapticSliderTick() }
             },
             onValueChangeFinished = { onCommit(sliderToTailCutoffMs(draftSlider)) },
-            valueRange = 0f..1f,
-            steps = SliderTickStepsDefault,
-            colors = sliderColors,
+            valueRange = 0f..1f, steps = SliderTickStepsDefault, colors = sliderColors,
         )
     }
 }
 
-// --- Conversion helpers ---
-
 private fun vibsPerEventToSlider(value: Float): Float {
-    val clamped = value.coerceIn(
-        HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT,
-        HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT,
-    )
-    return ((clamped - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT) /
-        (HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT))
-        .coerceIn(0f, 1f)
+    val clamped = value.coerceIn(HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT, HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT)
+    return ((clamped - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT) / (HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT)).coerceIn(0f, 1f)
 }
 
-private fun sliderToVibsPerEvent(slider: Float): Float {
-    return HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT +
-        slider.coerceIn(0f, 1f) *
-        (HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT)
-}
+private fun sliderToVibsPerEvent(slider: Float): Float =
+    HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT + slider.coerceIn(0f, 1f) * (HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT - HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT)
 
 private fun tailCutoffMsToSlider(ms: Int): Float {
-    val clamped = ms.coerceIn(
-        HapticsSettings.MIN_SCROLL_TAIL_CUTOFF_MS,
-        HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS,
-    )
+    val clamped = ms.coerceIn(HapticsSettings.MIN_SCROLL_TAIL_CUTOFF_MS, HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS)
     return (clamped.toFloat() / HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS.toFloat()).coerceIn(0f, 1f)
 }
 
-private fun sliderToTailCutoffMs(slider: Float): Int {
-    return (slider.coerceIn(0f, 1f) * HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS).roundToInt()
-        .coerceIn(HapticsSettings.MIN_SCROLL_TAIL_CUTOFF_MS, HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS)
-}
+private fun sliderToTailCutoffMs(slider: Float): Int =
+    (slider.coerceIn(0f, 1f) * HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS).roundToInt().coerceIn(HapticsSettings.MIN_SCROLL_TAIL_CUTOFF_MS, HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS)
 
 @Composable
 private fun IntensityBadge(percent: Int) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shape = CircleShape,
-    ) {
-        Text(
-            text = stringResource(id = R.string.intensity_value, percent),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-        )
+    Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
+        Text(text = stringResource(id = R.string.intensity_value, percent), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
     }
 }

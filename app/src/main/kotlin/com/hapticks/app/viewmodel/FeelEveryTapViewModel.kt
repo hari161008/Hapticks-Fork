@@ -25,10 +25,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * UI state for the Feel Every Tap flow: tap toggle, pattern, and intensity shared with
- * [HapticsAccessibilityService] via [HapticsPreferences].
- */
 class FeelEveryTapViewModel(
     application: Application,
     private val preferences: HapticsPreferences,
@@ -46,61 +42,25 @@ class FeelEveryTapViewModel(
     private val _isServiceEnabled = MutableStateFlow(false)
     val isServiceEnabled: StateFlow<Boolean> = _isServiceEnabled.asStateFlow()
 
-    init {
-        refreshServiceState()
-    }
+    init { refreshServiceState() }
 
     fun refreshServiceState() {
         _isServiceEnabled.value = isAccessibilityServiceEnabled(getApplication())
     }
 
-    fun setTapEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setTapEnabled(enabled) }
-    }
-
-    fun commitIntensity(intensity: Float) {
-        viewModelScope.launch { preferences.setIntensity(intensity) }
-    }
-
-    fun setPattern(pattern: HapticPattern) {
-        viewModelScope.launch { preferences.setPattern(pattern) }
-    }
-
-    fun setScrollEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setScrollEnabled(enabled) }
-    }
-
-    fun commitScrollIntensity(intensity: Float) {
-        viewModelScope.launch { preferences.setScrollIntensity(intensity) }
-    }
-
-    fun commitScrollHapticDensity(eventsPerHundredPx: Float) {
-        viewModelScope.launch { preferences.setScrollHapticEventsPerHundredPx(eventsPerHundredPx) }
-    }
-
-    fun setScrollPattern(pattern: HapticPattern) {
-        viewModelScope.launch { preferences.setScrollPattern(pattern) }
-    }
-
-    fun commitScrollVibrationsPerEvent(value: Float) {
-        viewModelScope.launch { preferences.setScrollVibrationsPerEvent(value) }
-    }
-
-    fun commitScrollSpeedVibScale(value: Float) {
-        viewModelScope.launch { preferences.setScrollSpeedVibrationScale(value) }
-    }
-
-    fun commitScrollTailCutoffMs(value: Int) {
-        viewModelScope.launch { preferences.setScrollTailCutoffMs(value) }
-    }
-
-    fun setTapExcludedPackages(packages: Set<String>) {
-        viewModelScope.launch { preferences.setTapExcludedPackages(packages) }
-    }
-
-    fun setScrollExcludedPackages(packages: Set<String>) {
-        viewModelScope.launch { preferences.setScrollExcludedPackages(packages) }
-    }
+    fun setTapEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setTapEnabled(enabled) } }
+    fun commitIntensity(intensity: Float) { viewModelScope.launch { preferences.setIntensity(intensity) } }
+    fun setPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setPattern(pattern) } }
+    fun setScrollEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setScrollEnabled(enabled) } }
+    fun commitScrollIntensity(intensity: Float) { viewModelScope.launch { preferences.setScrollIntensity(intensity) } }
+    fun commitScrollHapticDensity(eventsPerHundredPx: Float) { viewModelScope.launch { preferences.setScrollHapticEventsPerHundredPx(eventsPerHundredPx) } }
+    fun setScrollPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setScrollPattern(pattern) } }
+    fun commitScrollVibrationsPerEvent(value: Float) { viewModelScope.launch { preferences.setScrollVibrationsPerEvent(value) } }
+    fun commitScrollSpeedVibScale(value: Float) { viewModelScope.launch { preferences.setScrollSpeedVibrationScale(value) } }
+    fun commitScrollTailCutoffMs(value: Int) { viewModelScope.launch { preferences.setScrollTailCutoffMs(value) } }
+    fun setScrollHorizontalEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setScrollHorizontalEnabled(enabled) } }
+    fun setTapExcludedPackages(packages: Set<String>) { viewModelScope.launch { preferences.setTapExcludedPackages(packages) } }
+    fun setScrollExcludedPackages(packages: Set<String>) { viewModelScope.launch { preferences.setScrollExcludedPackages(packages) } }
 
     fun resetTapDefaults() {
         viewModelScope.launch {
@@ -117,16 +77,56 @@ class FeelEveryTapViewModel(
             preferences.setScrollSpeedVibrationScale(HapticsSettings.Default.scrollSpeedVibrationScale)
             preferences.setScrollTailCutoffMs(HapticsSettings.Default.scrollTailCutoffMs)
             preferences.setScrollPattern(HapticsSettings.Default.scrollPattern)
+            preferences.setScrollHorizontalEnabled(HapticsSettings.Default.scrollHorizontalEnabled)
         }
     }
 
-    /** Plays the configured tap pattern (for the dedicated test control only). */
+    // Charging
+    fun setChargingVibEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setChargingVibEnabled(enabled) } }
+    fun setChargingVibOnConnect(enabled: Boolean) { viewModelScope.launch { preferences.setChargingVibOnConnect(enabled) } }
+    fun setChargingVibOnDisconnect(enabled: Boolean) { viewModelScope.launch { preferences.setChargingVibOnDisconnect(enabled) } }
+    fun setChargingVibPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setChargingVibPattern(pattern) } }
+    fun commitChargingVibIntensity(intensity: Float) { viewModelScope.launch { preferences.setChargingVibIntensity(intensity) } }
+    fun resetChargingDefaults() {
+        viewModelScope.launch {
+            preferences.setChargingVibPattern(HapticsSettings.Default.chargingVibPattern)
+            preferences.setChargingVibIntensity(HapticsSettings.Default.chargingVibIntensity)
+            preferences.setChargingVibOnConnect(HapticsSettings.Default.chargingVibOnConnect)
+            preferences.setChargingVibOnDisconnect(HapticsSettings.Default.chargingVibOnDisconnect)
+        }
+    }
+
+    // Volume haptics
+    fun setVolumeHapticEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setVolumeHapticEnabled(enabled) } }
+    fun setVolumeHapticPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setVolumeHapticPattern(pattern) } }
+    fun commitVolumeHapticIntensity(intensity: Float) { viewModelScope.launch { preferences.setVolumeHapticIntensity(intensity) } }
+
+    // Power haptics
+    fun setPowerHapticEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setPowerHapticEnabled(enabled) } }
+    fun setPowerHapticPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setPowerHapticPattern(pattern) } }
+    fun commitPowerHapticIntensity(intensity: Float) { viewModelScope.launch { preferences.setPowerHapticIntensity(intensity) } }
+
+    // Brightness haptics
+    fun setBrightnessHapticEnabled(enabled: Boolean) { viewModelScope.launch { preferences.setBrightnessHapticEnabled(enabled) } }
+    fun setBrightnessHapticPattern(pattern: HapticPattern) { viewModelScope.launch { preferences.setBrightnessHapticPattern(pattern) } }
+    fun commitBrightnessHapticIntensity(intensity: Float) { viewModelScope.launch { preferences.setBrightnessHapticIntensity(intensity) } }
+
+    fun resetButtonHapticsDefaults() {
+        viewModelScope.launch {
+            preferences.setVolumeHapticPattern(HapticsSettings.Default.volumeHapticPattern)
+            preferences.setVolumeHapticIntensity(HapticsSettings.Default.volumeHapticIntensity)
+            preferences.setPowerHapticPattern(HapticsSettings.Default.powerHapticPattern)
+            preferences.setPowerHapticIntensity(HapticsSettings.Default.powerHapticIntensity)
+            preferences.setBrightnessHapticPattern(HapticsSettings.Default.brightnessHapticPattern)
+            preferences.setBrightnessHapticIntensity(HapticsSettings.Default.brightnessHapticIntensity)
+        }
+    }
+
     fun testHaptic() {
         val s = settings.value
         engine.play(s.pattern, s.intensity)
     }
 
-    /** Plays a short burst of scroll haptics (for the dedicated test control only). */
     fun testScrollHaptic() {
         val s = settings.value
         viewModelScope.launch {
@@ -139,45 +139,48 @@ class FeelEveryTapViewModel(
         }
     }
 
-    fun setUseDynamicColors(enabled: Boolean) {
-        viewModelScope.launch { preferences.setUseDynamicColors(enabled) }
+    fun testChargingHaptic() {
+        val s = settings.value
+        engine.play(s.chargingVibPattern, s.chargingVibIntensity)
     }
 
-    fun setThemeMode(mode: ThemeMode) {
-        viewModelScope.launch { preferences.setThemeMode(mode) }
+    fun testVolumeHaptic() {
+        val s = settings.value
+        engine.play(s.volumeHapticPattern, s.volumeHapticIntensity)
     }
 
-    fun setAmoledBlack(enabled: Boolean) {
-        viewModelScope.launch { preferences.setAmoledBlack(enabled) }
+    fun testPowerHaptic() {
+        val s = settings.value
+        engine.play(s.powerHapticPattern, s.powerHapticIntensity)
     }
 
-    fun setSeedColor(color: Int) {
-        viewModelScope.launch { preferences.setSeedColor(color) }
+    fun testBrightnessHaptic() {
+        val s = settings.value
+        engine.play(s.brightnessHapticPattern, s.brightnessHapticIntensity)
     }
+
+    fun setUseDynamicColors(enabled: Boolean) { viewModelScope.launch { preferences.setUseDynamicColors(enabled) } }
+    fun setThemeMode(mode: ThemeMode) { viewModelScope.launch { preferences.setThemeMode(mode) } }
+    fun setAmoledBlack(enabled: Boolean) { viewModelScope.launch { preferences.setAmoledBlack(enabled) } }
+    fun setSeedColor(color: Int) { viewModelScope.launch { preferences.setSeedColor(color) } }
 
     companion object {
         private fun isAccessibilityServiceEnabled(context: Context): Boolean {
             val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE)
                 as? AccessibilityManager ?: return false
             if (!manager.isEnabled) return false
-
             val enabledServices = Settings.Secure.getString(
                 context.contentResolver,
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
             ) ?: return false
-
             val expectedComponent = ComponentName(
-                context,
-                HapticsAccessibilityService::class.java,
+                context, HapticsAccessibilityService::class.java,
             ).flattenToString()
-
-            return enabledServices
-                .split(':')
-                .any { serviceId ->
-                    val normalized = serviceId.trim()
-                    normalized.equals(expectedComponent, ignoreCase = true) ||
-                        normalized.endsWith(HapticsAccessibilityService::class.java.name, ignoreCase = true)
-                }
+            return enabledServices.split(':').any { serviceId ->
+                val normalized = serviceId.trim()
+                normalized.equals(expectedComponent, ignoreCase = true) ||
+                    normalized.endsWith(HapticsAccessibilityService::class.java.name, ignoreCase = true)
+            }
         }
 
         fun factory(application: Application): ViewModelProvider.Factory = object : ViewModelProvider.Factory {

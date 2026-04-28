@@ -4,10 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -27,6 +27,8 @@ import com.hapticks.app.ui.screens.HomeScreen
 import com.hapticks.app.ui.screens.edgehaptics.EdgeHapticsScreen
 import com.hapticks.app.ui.screens.scrollhaptics.ScrollHapticsScreen
 import com.hapticks.app.ui.screens.SettingsScreen
+import com.hapticks.app.ui.screens.charginghaptics.ChargingHapticsScreen
+import com.hapticks.app.ui.screens.buttonhaptics.ButtonHapticsScreen
 import com.hapticks.app.ui.haptics.ProvideHapticksEdgeOverscrollHaptics
 import com.hapticks.app.ui.theme.HapticksTheme
 import com.hapticks.app.viewmodel.FeelEveryTapViewModel
@@ -116,12 +118,15 @@ class MainActivity : ComponentActivity() {
                                             onOpenFeelEveryTap = { route = Route.FEEL_EVERY_TAP },
                                             onOpenEdgeHaptics = { route = Route.EDGE_HAPTICS },
                                             onOpenTactileScrolling = { route = Route.TACTILE_SCROLLING },
+                                            onOpenChargingHaptics = { route = Route.CHARGING_HAPTICS },
+                                            onOpenButtonHaptics = { route = Route.BUTTON_HAPTICS },
                                         )
                                         BottomTab.SETTINGS -> SettingsScreen(
                                             settings = settings,
                                             onUseDynamicColorsChange = viewModel::setUseDynamicColors,
                                             onThemeModeChange = viewModel::setThemeMode,
                                             onAmoledBlackChange = viewModel::setAmoledBlack,
+                                            onSeedColorChange = viewModel::setSeedColor,
                                         )
                                     }
                                 }
@@ -132,6 +137,7 @@ class MainActivity : ComponentActivity() {
                                     settings = settings,
                                     isServiceEnabled = isServiceEnabled,
                                     onScrollEnabledChange = viewModel::setScrollEnabled,
+                                    onScrollHorizontalEnabledChange = viewModel::setScrollHorizontalEnabled,
                                     onScrollHapticDensityCommit = viewModel::commitScrollHapticDensity,
                                     onIntensityCommit = viewModel::commitScrollIntensity,
                                     onPatternSelected = viewModel::setScrollPattern,
@@ -152,6 +158,40 @@ class MainActivity : ComponentActivity() {
                                     excludedPackages = settings.scrollExcludedPackages,
                                     onExcludedPackagesChange = viewModel::setScrollExcludedPackages,
                                     onBack = { route = Route.TACTILE_SCROLLING },
+                                )
+                            }
+                            Route.CHARGING_HAPTICS -> {
+                                BackHandler { route = Route.HOME }
+                                ChargingHapticsScreen(
+                                    settings = settings,
+                                    onChargingVibEnabledChange = viewModel::setChargingVibEnabled,
+                                    onChargingVibOnConnectChange = viewModel::setChargingVibOnConnect,
+                                    onChargingVibOnDisconnectChange = viewModel::setChargingVibOnDisconnect,
+                                    onPatternSelected = viewModel::setChargingVibPattern,
+                                    onIntensityCommit = viewModel::commitChargingVibIntensity,
+                                    onTestHaptic = viewModel::testChargingHaptic,
+                                    onResetToDefaults = viewModel::resetChargingDefaults,
+                                    onBack = { route = Route.HOME },
+                                )
+                            }
+                            Route.BUTTON_HAPTICS -> {
+                                BackHandler { route = Route.HOME }
+                                ButtonHapticsScreen(
+                                    settings = settings,
+                                    onVolumeHapticEnabledChange = viewModel::setVolumeHapticEnabled,
+                                    onVolumePatternSelected = viewModel::setVolumeHapticPattern,
+                                    onVolumeIntensityCommit = viewModel::commitVolumeHapticIntensity,
+                                    onPowerHapticEnabledChange = viewModel::setPowerHapticEnabled,
+                                    onPowerPatternSelected = viewModel::setPowerHapticPattern,
+                                    onPowerIntensityCommit = viewModel::commitPowerHapticIntensity,
+                                    onBrightnessHapticEnabledChange = viewModel::setBrightnessHapticEnabled,
+                                    onBrightnessPatternSelected = viewModel::setBrightnessHapticPattern,
+                                    onBrightnessIntensityCommit = viewModel::commitBrightnessHapticIntensity,
+                                    onTestVolumeHaptic = viewModel::testVolumeHaptic,
+                                    onTestPowerHaptic = viewModel::testPowerHaptic,
+                                    onTestBrightnessHaptic = viewModel::testBrightnessHaptic,
+                                    onResetToDefaults = viewModel::resetButtonHapticsDefaults,
+                                    onBack = { route = Route.HOME },
                                 )
                             }
                         }
@@ -180,6 +220,7 @@ class MainActivity : ComponentActivity() {
         HOME, FEEL_EVERY_TAP, TAP_APP_EXCLUSIONS,
         EDGE_HAPTICS, EDGE_APP_EXCLUSIONS,
         TACTILE_SCROLLING, SCROLL_APP_EXCLUSIONS,
+        CHARGING_HAPTICS, BUTTON_HAPTICS,
         SETTINGS
     }
 
@@ -219,6 +260,3 @@ private fun EdgeHapticsFlowHost(
         onBack = onBack,
     )
 }
-
-
-

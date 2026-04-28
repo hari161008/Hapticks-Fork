@@ -2,13 +2,13 @@ package com.hapticks.app.service.accessibility.scrolled
 
 import android.view.accessibility.AccessibilityEvent
 
-internal fun scrolledSurfaceKey(event: AccessibilityEvent): String? {
-    val source = event.source
-    val viewId = source?.viewIdResourceName
-    return if (viewId != null) {
-        "w${event.windowId}\u001f${event.className}\u001f$viewId"
-    } else {
-        event.className?.toString()?.let { cn -> "w${event.windowId}\u001f$cn" }
+internal fun scrolledSurfaceKey(event: AccessibilityEvent): String {
+    val source = try { event.source } catch (_: Exception) { null }
+    val viewId = try { source?.viewIdResourceName } catch (_: Exception) { null }
+    val className = event.className?.toString()
+    return when {
+        viewId != null -> "w${event.windowId}\u001f${className}\u001f$viewId"
+        className != null -> "w${event.windowId}\u001f$className"
+        else -> "w${event.windowId}"
     }
 }
-

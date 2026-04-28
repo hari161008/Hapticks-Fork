@@ -46,8 +46,10 @@
     <string name="home_edge_haptics_subtitle">Feel a firm pulse the instant a scroll hits the absolute top or bottom in any app.</string>
     <string name="home_tactile_scrolling_title">Tactile Scrolling</string>
     <string name="home_tactile_scrolling_subtitle">Adds a subtle, rhythmic click as you scroll for a more grounded, physical experience.</string>
-    <string name="home_coming_soon_title">Coming Soon</string>
-    <string name="home_coming_soon_subtitle">More haptic experiences are on the way. Stay tuned.</string>
+    <string name="home_charging_haptics_title">Charging Vibration</string>
+    <string name="home_charging_haptics_subtitle">Feel a satisfying buzz when you plug in or unplug your charger.</string>
+    <string name="home_button_haptics_title">Button Haptics</string>
+    <string name="home_button_haptics_subtitle">Custom vibration feedback for volume, power, and brightness controls.</string>
 
     <!-- Edge Haptics screen (accessibility scroll bounds) -->
     <string name="edge_screen_title">Edge Haptics</string>
@@ -62,11 +64,7 @@
     <string name="edge_lsposed_what_title">What this does</string>
     <string name="edge_lsposed_what_body">This switches the app to hook scroll edge effects via LSPosed (libxposed path), which tracks overscroll at the system level for a cleaner pulse and helps avoid duplicate vibrations with the accessibility scroll path. Use the steps below only when you intend to run the module in LSPosed.</string>
     <string name="edge_lsposed_setup_title">How to set up</string>
-    <string name="edge_lsposed_setup_body">For the best results, enable this app in LSPosed Manager: 
-\n1. Open LSPosed.
-\n2. Locate this app and enable its module.
-\n3. Select all the apps you want to apply the module to in the module scope.
-\n4. Restart the affected apps or your phone to apply changes.</string>
+    <string name="edge_lsposed_setup_body">For the best results, enable this app in LSPosed Manager: \n\n1. Open LSPosed.\n\n2. Locate this app and enable its module.\n\n3. Select all the apps you want to apply the module to in the module scope.\n\n4. Restart the affected apps or your phone to apply changes.</string>
     <string name="edge_lsposed_status_overline">LSPosed</string>
     <string name="edge_lsposed_status_active">Active</string>
     <string name="edge_lsposed_status_inactive">Not active</string>
@@ -80,6 +78,8 @@
     <!-- Scroll haptic screen -->
     <string name="scroll_toggle_title">Enable Tactile Scrolling</string>
     <string name="scroll_toggle_subtitle">Use accessibility scroll events to fire a soft haptic cadence while lists and pages move</string>
+    <string name="scroll_horizontal_toggle_title">Horizontal Scroll Haptics</string>
+    <string name="scroll_horizontal_toggle_subtitle">Also fire haptics when scrolling horizontally in carousels and pagers</string>
     <string name="scroll_haptic_screen_test_button">Test scroll haptic</string>
     <string name="scroll_haptics_title">Tactile Scrolling</string>
     <string name="scroll_events_per_unit_title">Haptic events per scroll distance</string>
@@ -87,7 +87,6 @@
     <string name="scroll_events_per_unit_value">%1$s / 100 px</string>
     <string name="scroll_intensity_title">Pulse strength</string>
     <string name="scroll_intensity_subtitle">How strong each scroll pulse feels while you move through content.</string>
-
     <string name="scroll_vibs_per_event_title">Vibrations per scroll</string>
     <string name="scroll_vibs_per_event_subtitle">Fixed number of vibrations fired per scroll event. Higher values add more texture to every movement.</string>
     <string name="scroll_vibs_per_event_value">%1$d per event</string>
@@ -111,11 +110,37 @@
     <!-- Reset -->
     <string name="reset_to_defaults">Reset to defaults</string>
 
+    <!-- Charging Haptics screen -->
+    <string name="charging_haptics_title">Charging Vibration</string>
+    <string name="charging_vib_toggle_title">Enable Charging Vibration</string>
+    <string name="charging_vib_toggle_subtitle">Play a haptic pattern when charger is connected or disconnected</string>
+    <string name="charging_vib_on_connect_title">On Connect</string>
+    <string name="charging_vib_on_connect_subtitle">Vibrate when charger is plugged in</string>
+    <string name="charging_vib_on_disconnect_title">On Disconnect</string>
+    <string name="charging_vib_on_disconnect_subtitle">Vibrate when charger is unplugged</string>
+    <string name="charging_haptic_test_button">Test Charging Haptic</string>
+
+    <!-- Button Haptics screen -->
+    <string name="button_haptics_title">Button Haptics</string>
+    <string name="button_haptics_volume_section">Volume Buttons</string>
+    <string name="button_haptics_volume_toggle_title">Volume Button Haptics</string>
+    <string name="button_haptics_volume_toggle_subtitle">Play a haptic when volume up or down is pressed</string>
+    <string name="button_haptics_volume_test">Test Volume Haptic</string>
+    <string name="button_haptics_power_section">Power Button</string>
+    <string name="button_haptics_power_toggle_title">Power Button Haptics</string>
+    <string name="button_haptics_power_toggle_subtitle">Play a haptic when the power button is pressed</string>
+    <string name="button_haptics_power_test">Test Power Haptic</string>
+    <string name="button_haptics_brightness_section">Brightness Slider</string>
+    <string name="button_haptics_brightness_toggle_title">Brightness Slider Haptics</string>
+    <string name="button_haptics_brightness_toggle_subtitle">Play a haptic tick when brightness is adjusted</string>
+    <string name="button_haptics_brightness_test">Test Brightness Haptic</string>
+
     <!-- Settings screen -->
     <string name="settings_header_caption">Preferences</string>
     <string name="settings_header_title">Settings</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_dynamic_color_title">Dynamic Color</string>
+    <string name="settings_color_palette_title">Color Palette</string>
     <string name="settings_theme_mode_title">Theme Mode</string>
     <string name="settings_theme_mode_system">System</string>
     <string name="settings_theme_mode_light">Light</string>

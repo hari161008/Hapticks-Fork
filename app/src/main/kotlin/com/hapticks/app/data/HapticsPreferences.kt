@@ -65,6 +65,8 @@ class HapticsPreferences(context: Context) {
                     HapticsSettings.MIN_SCROLL_TAIL_CUTOFF_MS,
                     HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS,
                 ),
+                scrollHorizontalEnabled = prefs[Keys.SCROLL_HORIZONTAL_ENABLED]
+                    ?: HapticsSettings.Default.scrollHorizontalEnabled,
                 edgePattern = HapticPattern.fromStorageKey(prefs[Keys.EDGE_PATTERN])
                     .takeIf { prefs.contains(Keys.EDGE_PATTERN) } ?: HapticsSettings.Default.edgePattern,
                 edgeIntensity = (prefs[Keys.EDGE_INTENSITY] ?: HapticsSettings.Default.edgeIntensity)
@@ -83,19 +85,37 @@ class HapticsPreferences(context: Context) {
                 tapExcludedPackages = prefs[Keys.TAP_EXCLUDED_PACKAGES] ?: emptySet(),
                 scrollExcludedPackages = prefs[Keys.SCROLL_EXCLUDED_PACKAGES] ?: emptySet(),
                 edgeExcludedPackages = prefs[Keys.EDGE_EXCLUDED_PACKAGES] ?: emptySet(),
+                chargingVibEnabled = prefs[Keys.CHARGING_VIB_ENABLED] ?: HapticsSettings.Default.chargingVibEnabled,
+                chargingVibOnConnect = prefs[Keys.CHARGING_VIB_ON_CONNECT] ?: HapticsSettings.Default.chargingVibOnConnect,
+                chargingVibOnDisconnect = prefs[Keys.CHARGING_VIB_ON_DISCONNECT] ?: HapticsSettings.Default.chargingVibOnDisconnect,
+                chargingVibPattern = HapticPattern.fromStorageKey(prefs[Keys.CHARGING_VIB_PATTERN])
+                    .takeIf { prefs.contains(Keys.CHARGING_VIB_PATTERN) } ?: HapticsSettings.Default.chargingVibPattern,
+                chargingVibIntensity = (prefs[Keys.CHARGING_VIB_INTENSITY] ?: HapticsSettings.Default.chargingVibIntensity)
+                    .coerceIn(0f, 1f),
+                volumeHapticEnabled = prefs[Keys.VOLUME_HAPTIC_ENABLED] ?: HapticsSettings.Default.volumeHapticEnabled,
+                volumeHapticPattern = HapticPattern.fromStorageKey(prefs[Keys.VOLUME_HAPTIC_PATTERN])
+                    .takeIf { prefs.contains(Keys.VOLUME_HAPTIC_PATTERN) } ?: HapticsSettings.Default.volumeHapticPattern,
+                volumeHapticIntensity = (prefs[Keys.VOLUME_HAPTIC_INTENSITY] ?: HapticsSettings.Default.volumeHapticIntensity)
+                    .coerceIn(0f, 1f),
+                powerHapticEnabled = prefs[Keys.POWER_HAPTIC_ENABLED] ?: HapticsSettings.Default.powerHapticEnabled,
+                powerHapticPattern = HapticPattern.fromStorageKey(prefs[Keys.POWER_HAPTIC_PATTERN])
+                    .takeIf { prefs.contains(Keys.POWER_HAPTIC_PATTERN) } ?: HapticsSettings.Default.powerHapticPattern,
+                powerHapticIntensity = (prefs[Keys.POWER_HAPTIC_INTENSITY] ?: HapticsSettings.Default.powerHapticIntensity)
+                    .coerceIn(0f, 1f),
+                brightnessHapticEnabled = prefs[Keys.BRIGHTNESS_HAPTIC_ENABLED] ?: HapticsSettings.Default.brightnessHapticEnabled,
+                brightnessHapticPattern = HapticPattern.fromStorageKey(prefs[Keys.BRIGHTNESS_HAPTIC_PATTERN])
+                    .takeIf { prefs.contains(Keys.BRIGHTNESS_HAPTIC_PATTERN) } ?: HapticsSettings.Default.brightnessHapticPattern,
+                brightnessHapticIntensity = (prefs[Keys.BRIGHTNESS_HAPTIC_INTENSITY] ?: HapticsSettings.Default.brightnessHapticIntensity)
+                    .coerceIn(0f, 1f),
             )
         }
 
     suspend fun setTapEnabled(enabled: Boolean) = edit { it[Keys.TAP_ENABLED] = enabled }
-    suspend fun setIntensity(intensity: Float) = edit {
-        it[Keys.INTENSITY] = intensity.coerceIn(0f, 1f)
-    }
+    suspend fun setIntensity(intensity: Float) = edit { it[Keys.INTENSITY] = intensity.coerceIn(0f, 1f) }
     suspend fun setPattern(pattern: HapticPattern) = edit { it[Keys.PATTERN] = pattern.name }
     suspend fun setScrollEnabled(enabled: Boolean) = edit { it[Keys.SCROLL_ENABLED] = enabled }
     suspend fun setScrollPattern(pattern: HapticPattern) = edit { it[Keys.SCROLL_PATTERN] = pattern.name }
-    suspend fun setScrollIntensity(intensity: Float) = edit {
-        it[Keys.SCROLL_INTENSITY] = intensity.coerceIn(0f, 1f)
-    }
+    suspend fun setScrollIntensity(intensity: Float) = edit { it[Keys.SCROLL_INTENSITY] = intensity.coerceIn(0f, 1f) }
     suspend fun setScrollHapticEventsPerHundredPx(value: Float) = edit {
         it[Keys.SCROLL_HAPTIC_EVENTS_PER_HUNDRED_PX] = value.coerceIn(
             HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX,
@@ -120,22 +140,40 @@ class HapticsPreferences(context: Context) {
             HapticsSettings.MAX_SCROLL_TAIL_CUTOFF_MS,
         )
     }
+    suspend fun setScrollHorizontalEnabled(enabled: Boolean) = edit { it[Keys.SCROLL_HORIZONTAL_ENABLED] = enabled }
     suspend fun setEdgePattern(pattern: HapticPattern) = edit { it[Keys.EDGE_PATTERN] = pattern.name }
-    suspend fun setEdgeIntensity(intensity: Float) = edit {
-        it[Keys.EDGE_INTENSITY] = intensity.coerceIn(0f, 1f)
-    }
+    suspend fun setEdgeIntensity(intensity: Float) = edit { it[Keys.EDGE_INTENSITY] = intensity.coerceIn(0f, 1f) }
     suspend fun setA11yScrollBoundEdge(enabled: Boolean) = edit { it[Keys.A11Y_SCROLL_BOUND_EDGE] = enabled }
-
     suspend fun setEdgeLsposedLibxposedPath(enabled: Boolean) = edit { it[Keys.EDGE_LSPOSED_LIBXPOSED_PATH] = enabled }
-
     suspend fun setTapExcludedPackages(packages: Set<String>) = edit { it[Keys.TAP_EXCLUDED_PACKAGES] = packages }
     suspend fun setScrollExcludedPackages(packages: Set<String>) = edit { it[Keys.SCROLL_EXCLUDED_PACKAGES] = packages }
     suspend fun setEdgeExcludedPackages(packages: Set<String>) = edit { it[Keys.EDGE_EXCLUDED_PACKAGES] = packages }
-
     suspend fun setUseDynamicColors(enabled: Boolean) = edit { it[Keys.USE_DYNAMIC_COLORS] = enabled }
     suspend fun setThemeMode(mode: ThemeMode) = edit { it[Keys.THEME_MODE] = mode.name }
     suspend fun setAmoledBlack(enabled: Boolean) = edit { it[Keys.AMOLED_BLACK] = enabled }
     suspend fun setSeedColor(color: Int) = edit { it[Keys.SEED_COLOR] = color }
+
+    // Charging
+    suspend fun setChargingVibEnabled(enabled: Boolean) = edit { it[Keys.CHARGING_VIB_ENABLED] = enabled }
+    suspend fun setChargingVibOnConnect(enabled: Boolean) = edit { it[Keys.CHARGING_VIB_ON_CONNECT] = enabled }
+    suspend fun setChargingVibOnDisconnect(enabled: Boolean) = edit { it[Keys.CHARGING_VIB_ON_DISCONNECT] = enabled }
+    suspend fun setChargingVibPattern(pattern: HapticPattern) = edit { it[Keys.CHARGING_VIB_PATTERN] = pattern.name }
+    suspend fun setChargingVibIntensity(intensity: Float) = edit { it[Keys.CHARGING_VIB_INTENSITY] = intensity.coerceIn(0f, 1f) }
+
+    // Volume haptics
+    suspend fun setVolumeHapticEnabled(enabled: Boolean) = edit { it[Keys.VOLUME_HAPTIC_ENABLED] = enabled }
+    suspend fun setVolumeHapticPattern(pattern: HapticPattern) = edit { it[Keys.VOLUME_HAPTIC_PATTERN] = pattern.name }
+    suspend fun setVolumeHapticIntensity(intensity: Float) = edit { it[Keys.VOLUME_HAPTIC_INTENSITY] = intensity.coerceIn(0f, 1f) }
+
+    // Power haptics
+    suspend fun setPowerHapticEnabled(enabled: Boolean) = edit { it[Keys.POWER_HAPTIC_ENABLED] = enabled }
+    suspend fun setPowerHapticPattern(pattern: HapticPattern) = edit { it[Keys.POWER_HAPTIC_PATTERN] = pattern.name }
+    suspend fun setPowerHapticIntensity(intensity: Float) = edit { it[Keys.POWER_HAPTIC_INTENSITY] = intensity.coerceIn(0f, 1f) }
+
+    // Brightness haptics
+    suspend fun setBrightnessHapticEnabled(enabled: Boolean) = edit { it[Keys.BRIGHTNESS_HAPTIC_ENABLED] = enabled }
+    suspend fun setBrightnessHapticPattern(pattern: HapticPattern) = edit { it[Keys.BRIGHTNESS_HAPTIC_PATTERN] = pattern.name }
+    suspend fun setBrightnessHapticIntensity(intensity: Float) = edit { it[Keys.BRIGHTNESS_HAPTIC_INTENSITY] = intensity.coerceIn(0f, 1f) }
 
     private suspend inline fun edit(crossinline block: (MutablePreferences) -> Unit) {
         try {
@@ -156,6 +194,7 @@ class HapticsPreferences(context: Context) {
         val SCROLL_VIBS_PER_EVENT = floatPreferencesKey("scroll_vibs_per_event")
         val SCROLL_SPEED_VIB_SCALE = floatPreferencesKey("scroll_speed_vib_scale")
         val SCROLL_TAIL_CUTOFF_MS = intPreferencesKey("scroll_tail_cutoff_ms")
+        val SCROLL_HORIZONTAL_ENABLED = booleanPreferencesKey("scroll_horizontal_enabled")
         val EDGE_PATTERN = stringPreferencesKey("edge_pattern")
         val EDGE_INTENSITY = floatPreferencesKey("edge_intensity")
         val A11Y_SCROLL_BOUND_EDGE = booleanPreferencesKey("a11y_scroll_bound_edge")
@@ -167,6 +206,24 @@ class HapticsPreferences(context: Context) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val AMOLED_BLACK = booleanPreferencesKey("amoled_black")
         val SEED_COLOR = intPreferencesKey("seed_color")
+        // Charging
+        val CHARGING_VIB_ENABLED = booleanPreferencesKey("charging_vib_enabled")
+        val CHARGING_VIB_ON_CONNECT = booleanPreferencesKey("charging_vib_on_connect")
+        val CHARGING_VIB_ON_DISCONNECT = booleanPreferencesKey("charging_vib_on_disconnect")
+        val CHARGING_VIB_PATTERN = stringPreferencesKey("charging_vib_pattern")
+        val CHARGING_VIB_INTENSITY = floatPreferencesKey("charging_vib_intensity")
+        // Volume
+        val VOLUME_HAPTIC_ENABLED = booleanPreferencesKey("volume_haptic_enabled")
+        val VOLUME_HAPTIC_PATTERN = stringPreferencesKey("volume_haptic_pattern")
+        val VOLUME_HAPTIC_INTENSITY = floatPreferencesKey("volume_haptic_intensity")
+        // Power
+        val POWER_HAPTIC_ENABLED = booleanPreferencesKey("power_haptic_enabled")
+        val POWER_HAPTIC_PATTERN = stringPreferencesKey("power_haptic_pattern")
+        val POWER_HAPTIC_INTENSITY = floatPreferencesKey("power_haptic_intensity")
+        // Brightness
+        val BRIGHTNESS_HAPTIC_ENABLED = booleanPreferencesKey("brightness_haptic_enabled")
+        val BRIGHTNESS_HAPTIC_PATTERN = stringPreferencesKey("brightness_haptic_pattern")
+        val BRIGHTNESS_HAPTIC_INTENSITY = floatPreferencesKey("brightness_haptic_intensity")
     }
 
     private companion object {

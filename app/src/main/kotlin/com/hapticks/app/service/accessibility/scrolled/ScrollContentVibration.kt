@@ -1,5 +1,6 @@
 package com.hapticks.app.service.accessibility.scrolled
 
+import android.os.Build
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import com.hapticks.app.data.HapticsSettings
@@ -11,49 +12,35 @@ internal object ScrollContentVibration {
 
     private const val REFERENCE_PX = 100f
     private const val MAX_TRACKED_SURFACES = 128
-
-    /**
-     * Noise floor in virtual pixels. Index-based steps are scaled up (~56 vp each),
-     * so this only filters sub-pixel jitter on true pixel-scroll surfaces.
-     */
     private const val NOISE_FLOOR_VP = 2f
-
-    /** Minimum gap between emitted haptic ticks (ms). */
     private const val MIN_EMIT_INTERVAL_MS = 38L
-
-    /** Above this speed (vp/s), credit gain tapers so fast flings don't over-tick. */
     private const val FLING_BLEND_START_VPS = 900f
     private const val FLING_BLEND_END_VPS = 5200f
     private const val FLING_CREDIT_GAIN_MIN = 0.62f
-
-    /** Below this speed, ticks stay soft (light finger drag). */
     private const val SLOW_DRAG_BLEND_VPS = 180f
     private const val SLOW_INTENSITY_MIN_SCALE = 0.35f
-
     private const val VELOCITY_DT_CAP_MS = 200L
     private const val VELOCITY_SMOOTHING = 0.55f
     private const val TAIL_DECAY_FRACTION = 0.50f
-
-    /**
-     * Virtual-pixel scale applied when the view reports item indices instead of
-     * pixel offsets (RecyclerView, ListView, GridView, etc.).
-     * Approximates a typical list-item height so the credit system stays consistent.
-     */
     private const val INDEX_VIRTUAL_PX_PER_ITEM = 56f
 
     private val perSurface = ConcurrentHashMap<String, ContentState>(128)
 
-    // ──────────────────────────────────────────────────────────────
-    // Public entry point
-    // ──────────────────────────────────────────────────────────────
-
     fun onViewScrolled(event: AccessibilityEvent, settings: HapticsSettings): Decision {
-        val key = scrolledSurfaceKey(event) ?: return Decision.None
+        val key = scrolledSurfaceKey(event)
         val nowUptime = SystemClock.uptimeMillis()
 
-        // Resolve position in "virtual pixels" so the credit system is uniform
-        // whether the view reports pixel offsets or item indices.
-        val resolved = resolvePosition(event) ?: return Decision.None
+        val resolved = resolvePosition(event, settings.scrollHorizontalEnabled)
+
+        // API 30+: delta-based fallback for apps that don't report absolute scroll position
+        if (resolved == null) {
+            return if (Build.VERSION.SDK_INT >= 30) {
+                handleDeltaScroll(key, event, settings, nowUptime)
+            } else {
+                Decision.None
+            }
+        }
+
         val pos = resolved.first
         val vpScale = resolved.second
 
@@ -68,6 +55,7 @@ internal object ScrollContentVibration {
                 peakSmoothedVelocity = 0f,
                 velocityPeakUptimeMs = 0L,
                 vpScale = vpScale,
+                syntheticVp = 0f,
             )
             evictIfNeeded()
             return Decision.None
@@ -77,14 +65,60 @@ internal object ScrollContentVibration {
         if (signedStep == 0) return Decision.None
 
         val effectiveStepVp = abs(signedStep).toFloat() * vpScale
-
-        // Filter micro-jitter
         if (effectiveStepVp < NOISE_FLOOR_VP) {
             perSurface[key] = prev.copy(lastPos = pos, lastEventTime = event.eventTime)
             return Decision.None
         }
 
-        // Velocity in virtual px/s
+        return computeAndEmit(key, prev, pos, vpScale, effectiveStepVp, event, settings, nowUptime)
+    }
+
+    private fun handleDeltaScroll(
+        key: String,
+        event: AccessibilityEvent,
+        settings: HapticsSettings,
+        nowUptime: Long,
+    ): Decision {
+        if (Build.VERSION.SDK_INT < 30) return Decision.None
+        val deltaY = event.scrollDeltaY
+        val deltaX = if (settings.scrollHorizontalEnabled) event.scrollDeltaX else 0
+        val effectiveStepVp = (abs(deltaY) + abs(deltaX)).toFloat()
+        if (effectiveStepVp < NOISE_FLOOR_VP) return Decision.None
+
+        val prev = perSurface[key]
+        val syntheticPos = ((prev?.syntheticVp ?: 0f) + effectiveStepVp)
+        if (prev == null) {
+            perSurface[key] = ContentState(
+                lastPos = 0,
+                lastEventTime = event.eventTime,
+                smoothedVelocityVps = -1f,
+                lastHapticEmitUptimeMs = 0L,
+                emitAnchorVp = 0f,
+                peakSmoothedVelocity = 0f,
+                velocityPeakUptimeMs = 0L,
+                vpScale = 1f,
+                syntheticVp = syntheticPos,
+            )
+            evictIfNeeded()
+            return Decision.None
+        }
+        // Use syntheticVp as the running position for delta-based surfaces
+        val syntheticPrev = prev.copy(lastPos = prev.syntheticVp.toInt())
+        val newState = prev.copy(syntheticVp = syntheticPos)
+        perSurface[key] = newState
+        return computeAndEmit(key, syntheticPrev, syntheticPos.toInt(), 1f, effectiveStepVp, event, settings, nowUptime)
+    }
+
+    private fun computeAndEmit(
+        key: String,
+        prev: ContentState,
+        pos: Int,
+        vpScale: Float,
+        effectiveStepVp: Float,
+        event: AccessibilityEvent,
+        settings: HapticsSettings,
+        nowUptime: Long,
+    ): Decision {
         val dtRaw = run {
             val d = event.eventTime - prev.lastEventTime
             if (d > 0L) d else 1L
@@ -97,7 +131,6 @@ internal object ScrollContentVibration {
             prev.smoothedVelocityVps * (1f - VELOCITY_SMOOTHING) + instantVps * VELOCITY_SMOOTHING
         }
 
-        // Track velocity peak for tail-cutoff
         val newPeakV: Float
         val newPeakUptimeMs: Long
         if (smoothedV > prev.peakSmoothedVelocity) {
@@ -108,7 +141,6 @@ internal object ScrollContentVibration {
             newPeakUptimeMs = prev.velocityPeakUptimeMs
         }
 
-        // Credit accumulation in virtual pixels since last emit anchor
         val currentVp = pos.toFloat() * vpScale
         val rate = settings.scrollHapticEventsPerHundredPx.coerceIn(
             HapticsSettings.MIN_SCROLL_EVENTS_PER_HUNDRED_PX,
@@ -137,7 +169,7 @@ internal object ScrollContentVibration {
             newLastEmit = nowUptime
         }
 
-        perSurface[key] = ContentState(
+        perSurface[key] = prev.copy(
             lastPos = pos,
             lastEventTime = event.eventTime,
             smoothedVelocityVps = smoothedV,
@@ -150,7 +182,6 @@ internal object ScrollContentVibration {
 
         if (pulses <= 0) return Decision.None
 
-        // Tail cutoff: suppress haptics deep into a decelerating fling
         val tailCutoffMs = settings.scrollTailCutoffMs.toLong()
         if (tailCutoffMs > 0L &&
             newPeakV > SLOW_DRAG_BLEND_VPS &&
@@ -160,12 +191,10 @@ internal object ScrollContentVibration {
             return Decision.None
         }
 
-        // Compute intensity
         val baseIntensity = settings.scrollIntensity.coerceIn(0f, 1f)
         val intensityScale = slowDragIntensityScale(smoothedV)
         val pulseIntensity = (baseIntensity * intensityScale).coerceIn(0.05f, 1f)
 
-        // Compute count: fixed base + speed bonus
         val baseCount = settings.scrollVibrationsPerEvent.coerceIn(
             HapticsSettings.MIN_SCROLL_VIBS_PER_EVENT,
             HapticsSettings.MAX_SCROLL_VIBS_PER_EVENT,
@@ -177,52 +206,47 @@ internal object ScrollContentVibration {
         } else 0
 
         val totalCount = (baseCount + speedExtra).coerceIn(1, 8)
-
         return Decision.Play(intensity = pulseIntensity, count = totalCount)
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // Position resolution
-    // ──────────────────────────────────────────────────────────────
-
     /**
-     * Returns (position, virtualPixelScale) or null if no usable scroll position found.
-     *
-     * Priority (first non-null wins):
-     *  1. Vertical pixel scroll with valid maxScrollY  → scale 1.0
-     *  2. Horizontal pixel scroll with valid maxScrollX → scale 1.0
-     *  3. Raw scrollY > 0 (max unreported)            → scale 1.0
-     *  4. Raw scrollX > 0 (max unreported)            → scale 1.0
-     *  5. fromIndex (RecyclerView, ListView, etc.)    → scale INDEX_VIRTUAL_PX_PER_ITEM
+     * Resolve scroll position from the event.
+     * Priority: bounded vertical → bounded horizontal → raw vertical → index-based → raw horizontal
+     * If scrollHorizontalEnabled is false, horizontal scroll is deprioritized.
      */
-    private fun resolvePosition(event: AccessibilityEvent): Pair<Int, Float>? {
+    private fun resolvePosition(event: AccessibilityEvent, horizontalEnabled: Boolean): Pair<Int, Float>? {
         val scrollY = event.scrollY
         val scrollX = event.scrollX
         val maxScrollY = event.maxScrollY
         val maxScrollX = event.maxScrollX
         val fromIndex = event.fromIndex
 
+        // Vertical bounded scroll
         if (maxScrollY > 0 && scrollY >= 0)
             return Pair(scrollY.coerceIn(0, maxScrollY), 1f)
 
-        if (maxScrollX > 0 && scrollX >= 0)
+        // Horizontal bounded scroll (only if enabled, or no vertical fallback)
+        if (maxScrollX > 0 && scrollX >= 0 && horizontalEnabled)
             return Pair(scrollX.coerceIn(0, maxScrollX), 1f)
 
+        // Raw vertical (max unreported)
         if (scrollY > 0)
             return Pair(scrollY, 1f)
 
-        if (scrollX > 0)
-            return Pair(scrollX, 1f)
-
+        // Index-based (RecyclerView, ListView, etc.)
         if (fromIndex >= 0)
             return Pair(fromIndex, INDEX_VIRTUAL_PX_PER_ITEM)
 
+        // Horizontal raw (max unreported) - only if enabled
+        if (scrollX > 0 && horizontalEnabled)
+            return Pair(scrollX, 1f)
+
+        // Horizontal bounded as last resort even if not explicitly enabled
+        if (maxScrollX > 0 && scrollX >= 0)
+            return Pair(scrollX.coerceIn(0, maxScrollX), 1f)
+
         return null
     }
-
-    // ──────────────────────────────────────────────────────────────
-    // Math helpers
-    // ──────────────────────────────────────────────────────────────
 
     private fun flingCreditGainScale(vps: Float): Float {
         if (vps <= FLING_BLEND_START_VPS) return 1f
@@ -242,10 +266,6 @@ internal object ScrollContentVibration {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // State & result types
-    // ──────────────────────────────────────────────────────────────
-
     private data class ContentState(
         val lastPos: Int,
         val lastEventTime: Long,
@@ -255,6 +275,7 @@ internal object ScrollContentVibration {
         val peakSmoothedVelocity: Float,
         val velocityPeakUptimeMs: Long,
         val vpScale: Float,
+        val syntheticVp: Float = 0f,
     )
 
     sealed class Decision {

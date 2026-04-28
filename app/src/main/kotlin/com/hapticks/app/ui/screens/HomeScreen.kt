@@ -17,7 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.RadioButtonChecked
 import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.SwipeUp
@@ -44,6 +45,8 @@ fun HomeScreen(
     onOpenFeelEveryTap: () -> Unit,
     onOpenEdgeHaptics: () -> Unit,
     onOpenTactileScrolling: () -> Unit,
+    onOpenChargingHaptics: () -> Unit,
+    onOpenButtonHaptics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -95,17 +98,26 @@ fun HomeScreen(
                     onClick = onOpenEdgeHaptics,
                 )
                 FeatureCard(
-                    title = stringResource(id = R.string.home_coming_soon_title),
-                    subtitle = stringResource(id = R.string.home_coming_soon_subtitle),
-                    icon = Icons.Rounded.AutoAwesome,
-                    accent = MaterialTheme.colorScheme.surfaceContainer,
-                    onAccent = MaterialTheme.colorScheme.onSurface,
-                    iconBg = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    enabled = false,
-                    onClick = {},
+                    title = stringResource(id = R.string.home_charging_haptics_title),
+                    subtitle = stringResource(id = R.string.home_charging_haptics_subtitle),
+                    icon = Icons.Rounded.BatteryChargingFull,
+                    accent = MaterialTheme.colorScheme.secondaryContainer,
+                    onAccent = MaterialTheme.colorScheme.onSecondaryContainer,
+                    iconBg = MaterialTheme.colorScheme.secondary,
+                    iconTint = MaterialTheme.colorScheme.onSecondary,
+                    onClick = onOpenChargingHaptics,
                 )
-            }            
+                FeatureCard(
+                    title = stringResource(id = R.string.home_button_haptics_title),
+                    subtitle = stringResource(id = R.string.home_button_haptics_subtitle),
+                    icon = Icons.Rounded.RadioButtonChecked,
+                    accent = MaterialTheme.colorScheme.secondaryContainer,
+                    onAccent = MaterialTheme.colorScheme.onSecondaryContainer,
+                    iconBg = MaterialTheme.colorScheme.secondary,
+                    iconTint = MaterialTheme.colorScheme.onSecondary,
+                    onClick = onOpenButtonHaptics,
+                )
+            }
             Spacer(modifier = Modifier.height(120.dp))
         }
     }
@@ -182,16 +194,11 @@ private fun FeatureCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = onAccent.copy(alpha = alpha),
-                    )
-                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = onAccent.copy(alpha = alpha),
+                )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodyMedium,
@@ -210,10 +217,7 @@ private fun ChevronPill() {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape,
-            ),
+            .background(color = MaterialTheme.colorScheme.primary, shape = CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

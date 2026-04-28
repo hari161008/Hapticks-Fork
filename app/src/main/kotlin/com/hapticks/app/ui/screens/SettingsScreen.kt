@@ -2,6 +2,8 @@ package com.hapticks.app.ui.screens
 
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +43,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -53,6 +57,27 @@ import com.hapticks.app.R
 import com.hapticks.app.data.HapticsSettings
 import com.hapticks.app.data.ThemeMode
 import com.hapticks.app.ui.haptics.hapticClickable
+import com.hapticks.app.ui.theme.SeedBlue
+import com.hapticks.app.ui.theme.SeedGreen
+import com.hapticks.app.ui.theme.SeedPurple
+import com.hapticks.app.ui.theme.SeedRed
+import com.hapticks.app.ui.theme.SeedYellow
+import com.hapticks.app.ui.theme.HapticksSage
+
+private val PresetColors = listOf(
+    Color(0xFF4F5A28), // Olive Green (default)
+    SeedPurple,
+    SeedBlue,
+    SeedGreen,
+    SeedRed,
+    SeedYellow,
+    HapticksSage,
+    Color(0xFF006A60), // Teal
+    Color(0xFF984816), // Deep Orange
+    Color(0xFF8B008B), // Dark Magenta
+    Color(0xFF00008B), // Dark Blue
+    Color(0xFF8B4513), // Saddle Brown
+)
 
 @Composable
 fun SettingsScreen(
@@ -60,6 +85,7 @@ fun SettingsScreen(
     onUseDynamicColorsChange: (Boolean) -> Unit,
     onThemeModeChange: (ThemeMode) -> Unit,
     onAmoledBlackChange: (Boolean) -> Unit,
+    onSeedColorChange: (Int) -> Unit = {},
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -74,15 +100,11 @@ fun SettingsScreen(
     ) { padding ->
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item(key = "header") {
-                SettingsHeader()
-            }
+            item(key = "header") { SettingsHeader() }
 
             item(key = "appearance") {
                 SettingsSection(
@@ -94,12 +116,19 @@ fun SettingsScreen(
                         subtitle = null,
                         position = RowPosition.Top,
                         trailing = {
-                            Switch(
-                                checked = settings.useDynamicColors,
-                                onCheckedChange = onUseDynamicColorsChange,
-                            )
+                            Switch(checked = settings.useDynamicColors, onCheckedChange = onUseDynamicColorsChange)
                         },
                     )
+
+                    if (!settings.useDynamicColors) {
+                        RowDivider()
+                        ColorPaletteRow(
+                            selectedColor = Color(settings.seedColor),
+                            onColorSelected = { onSeedColorChange(it.toArgb()) },
+                        )
+                    }
+
+                    RowDivider()
 
                     SettingsRow(
                         title = stringResource(R.string.settings_amoled_title),
@@ -110,19 +139,13 @@ fun SettingsScreen(
                         },
                         position = RowPosition.Bottom,
                         trailing = {
-                            Switch(
-                                checked = settings.amoledBlack,
-                                onCheckedChange = onAmoledBlackChange,
-                            )
+                            Switch(checked = settings.amoledBlack, onCheckedChange = onAmoledBlackChange)
                         },
                     )
 
                     RowDivider()
 
-                    ThemeModeRow(
-                        selected = settings.themeMode,
-                        onThemeModeChange = onThemeModeChange,
-                    )
+                    ThemeModeRow(selected = settings.themeMode, onThemeModeChange = onThemeModeChange)
                 }
             }
 
@@ -138,7 +161,7 @@ fun SettingsScreen(
                         onClick = {
                             val intent = Intent(
                                 Intent.ACTION_VIEW,
-                                "https://github.com/archieamas11/expand-haptics".toUri(),
+                                "https://github.com/hari161008/Hapticks-Fork".toUri(),
                             )
                             context.startActivity(intent)
                         },
@@ -153,8 +176,61 @@ fun SettingsScreen(
                     )
                 }
             }
-            item(key = "bottom_inset") {
-                Spacer(modifier = Modifier.height(96.dp))
+            item(key = "bottom_inset") { Spacer(modifier = Modifier.height(96.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun ColorPaletteRow(
+    selectedColor: Color,
+    onColorSelected: (Color) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp)
+            .padding(top = 12.dp, bottom = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.settings_color_palette_title),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        // Wrap colors in two rows
+        val rows = PresetColors.chunked(6)
+        rows.forEach { rowColors ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                rowColors.forEach { color ->
+                    val isSelected = remember(selectedColor, color) {
+                        selectedColor.toArgb() == color.toArgb()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .then(
+                                if (isSelected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                else Modifier.border(1.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
+                            )
+                            .clickable { onColorSelected(color) },
+                    ) {
+                        if (isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.8f))
+                                    .align(Alignment.Center),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -163,17 +239,13 @@ fun SettingsScreen(
 @Composable
 private fun SettingsHeader() {
     val junicodeFontFamily = remember { FontFamily(Font(R.font.junicode_italic)) }
-
     Column(
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
             text = stringResource(R.string.settings_header_caption),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontFamily = junicodeFontFamily,
-                fontSize = 15.sp,
-            ),
+            style = MaterialTheme.typography.labelLarge.copy(fontFamily = junicodeFontFamily, fontSize = 15.sp),
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
@@ -195,43 +267,21 @@ private fun SettingsSection(
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                    modifier = Modifier.size(28.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
+                    Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ) {
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                 Column { content() }
             }
         }
@@ -254,102 +304,55 @@ private fun SettingsRow(
         RowPosition.Bottom -> PaddingValues(top = 10.dp, bottom = 14.dp)
         RowPosition.Single -> PaddingValues(vertical = 14.dp)
     }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (onClick != null) Modifier.hapticClickable(onClick = onClick) else Modifier,
-            )
+            .then(if (onClick != null) Modifier.hapticClickable(onClick = onClick) else Modifier)
             .defaultMinSize(minHeight = 52.dp)
             .padding(horizontal = 14.dp)
             .padding(verticalPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             subtitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-
-        if (trailing != null) {
-            trailing()
-        }
+        if (trailing != null) trailing()
     }
 }
 
 @Composable
 private fun RowDivider() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp)
-            .height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
-    )
+    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp).height(1.dp).background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ThemeModeRow(
-    selected: ThemeMode,
-    onThemeModeChange: (ThemeMode) -> Unit,
-) {
+private fun ThemeModeRow(selected: ThemeMode, onThemeModeChange: (ThemeMode) -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp)
-            .padding(top = 12.dp, bottom = 14.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp).padding(top = 12.dp, bottom = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = stringResource(R.string.settings_theme_mode_title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
+        Text(text = stringResource(R.string.settings_theme_mode_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         val modes = listOf(
             ThemeModeOption(ThemeMode.SYSTEM, stringResource(R.string.settings_theme_mode_system), Icons.Rounded.Brightness6),
             ThemeModeOption(ThemeMode.LIGHT, stringResource(R.string.settings_theme_mode_light), Icons.Rounded.LightMode),
             ThemeModeOption(ThemeMode.DARK, stringResource(R.string.settings_theme_mode_dark), Icons.Rounded.DarkMode),
         )
-
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             modes.forEachIndexed { index, option ->
                 SegmentedButton(
                     selected = selected == option.mode,
                     onClick = { onThemeModeChange(option.mode) },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                    icon = {
-                        Icon(
-                            imageVector = option.icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    },
-                ) {
-                    Text(option.label)
-                }
+                    icon = { Icon(imageVector = option.icon, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                ) { Text(option.label) }
             }
         }
     }
 }
 
-private data class ThemeModeOption(
-    val mode: ThemeMode,
-    val label: String,
-    val icon: ImageVector,
-)
+private data class ThemeModeOption(val mode: ThemeMode, val label: String, val icon: ImageVector)

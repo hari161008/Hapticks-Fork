@@ -18,6 +18,7 @@ data class HapticsSettings(
     val scrollVibrationsPerEvent: Float = 1f,
     val scrollSpeedVibrationScale: Float = 0f,
     val scrollTailCutoffMs: Int = 0,
+    val scrollHorizontalEnabled: Boolean = false,
 
     // Edge Haptics Default Settings
     val edgePattern: HapticPattern = HapticPattern.SOFT_BUMP,
@@ -29,6 +30,24 @@ data class HapticsSettings(
     val tapExcludedPackages: Set<String> = emptySet(),
     val scrollExcludedPackages: Set<String> = emptySet(),
     val edgeExcludedPackages: Set<String> = emptySet(),
+
+    // Charging Vibration Settings
+    val chargingVibEnabled: Boolean = false,
+    val chargingVibOnConnect: Boolean = true,
+    val chargingVibOnDisconnect: Boolean = false,
+    val chargingVibPattern: HapticPattern = HapticPattern.DOUBLE_CLICK,
+    val chargingVibIntensity: Float = 1.0f,
+
+    // Button Haptics Settings
+    val volumeHapticEnabled: Boolean = false,
+    val volumeHapticPattern: HapticPattern = HapticPattern.TICK,
+    val volumeHapticIntensity: Float = 0.7f,
+    val powerHapticEnabled: Boolean = false,
+    val powerHapticPattern: HapticPattern = HapticPattern.HEAVY_CLICK,
+    val powerHapticIntensity: Float = 1.0f,
+    val brightnessHapticEnabled: Boolean = false,
+    val brightnessHapticPattern: HapticPattern = HapticPattern.TICK,
+    val brightnessHapticIntensity: Float = 0.5f,
 
     // Theme Default Settings
     val useDynamicColors: Boolean = true,
