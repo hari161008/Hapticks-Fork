@@ -12,7 +12,6 @@ So Ever Haptics is there to fix that and make interactions feel more alive and s
 * Adds haptic feedback to UI interactions <br>
 * Improves the feel of scrolling and touch actions <br>
 * Makes the overall experience more “premium” <br>
-<br>
 
 # Notes
 This is still a work in progress. The goal is to make haptics feel natural, fast, and consistent across all apps without adding lag or using too much battery.
